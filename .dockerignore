@@ -1,0 +1,12 @@
+.storybook
+.tmp
+.vscode
+kubernetes
+node_modules
+src
+test
+webpack
+npm-debug.log
+Dockerfile
+deployment.yaml
+service.yaml
