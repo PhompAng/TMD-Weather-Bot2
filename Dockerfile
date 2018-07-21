@@ -6,7 +6,7 @@ ARG APP_DIR=/usr/local/zeus
 
 RUN mkdir ${APP_DIR}
 WORKDIR ${APP_DIR}
-
+RUN mkdir .thumb
 COPY .env ${APP_DIR}
 
 COPY package.json ${APP_DIR}

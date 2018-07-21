@@ -26,9 +26,10 @@ export default async function download (radarUrl) {
       file.close()
       resolve()
     })
-    file.on('error', () => {
-      fs.unlink(start)
-      reject()
+    file.on('error', (err) => {
+      console.log(err)
+      fs.unlink(filename, (e) => { console.log(e) })
+      reject(err)
     })
   })
   return filename

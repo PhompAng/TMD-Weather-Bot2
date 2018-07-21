@@ -14,5 +14,9 @@ export default {
   'nongkhame_loop': {
     url: 'http://203.155.220.231/Radar/pics/',
     filename: 'nkradar.gif'
+  },
+  'large': {
+    url: 'http://203.155.220.231/FTPCustomer/radar/pics/',
+    filename: 'radarh.jpg'
   }
 }
