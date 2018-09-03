@@ -6,7 +6,8 @@ import download from './download'
 
 import _ from '~/env'
 
-const bot = new Telegraf(process.env.BOT_TOKEN)
+const bot = new Telegraf(process.env.BOT_TOKEN, {username: 'tmd_weather_bot'})
+const regex = /^\/([^@\s]+)@?(?:(\S+)|)\s?([\s\S]*)$/i
 
 function getRadarPhoto (arg) {
   switch (arg) {
@@ -36,6 +37,18 @@ bot.use((ctx, next) => {
   const start = new Date()
   if (ctx.update.message != null) {
     console.log('Recive message: %s [%s]', ctx.update.message.text, start)
+    const parts = regex.exec(ctx.update.message.text)
+    if (!parts) return next()
+    const command = {
+      text: ctx.update.message.text,
+      command: parts[1],
+      bot: parts[2],
+      args: parts[3],
+      get splitArgs () {
+        return parts[3].split(/\s+/)
+      }
+    }
+    ctx.state.command = command
   }
   return next(ctx).then(() => {
     const ms = new Date() - start
@@ -46,38 +59,45 @@ bot.use((ctx, next) => {
 bot.start((ctx) => ctx.reply('Hello! type /weather to start'))
 bot.command('large', async (ctx) => {
   try {
+    await ctx.reply('Processing: large')
     await replyWithPhoto(ctx, 'large')
   } catch (err) {
+    await ctx.reply(err)
     console.log(err)
   }
 })
 bot.command(['njk', 'nkm'], async (ctx) => {
   try {
-    if (ctx.update.message.text == null) {
+    if (ctx.state.command.command == null) {
       return
     }
-    let args = ctx.update.message.text.split('/')
-    if (args[1] != null) {
-      await replyWithPhoto(ctx, args[1].toLowerCase())
+    await ctx.reply('Processing: ' + ctx.state.command.command)
+    let command = ctx.state.command.command
+    if (command != null) {
+      await replyWithPhoto(ctx, command.toLowerCase())
     } else {
       await replyWithPhoto(ctx, 'nkm')
     }
   } catch (err) {
+    await ctx.reply(err)
     console.log(err)
   }
 })
 bot.command('weather', async (ctx) => {
   try {
-    if (ctx.update.message.text == null) {
+    if (ctx.state.command.text == null) {
       return
     }
-    let args = ctx.update.message.text.split(' ')
+    console.log(ctx.state)
+    await ctx.reply('Processing: ' + ctx.state.command.text)
+    let args = ctx.state.command.text.split(' ')
     if (args[1] != null) {
       await replyWithPhoto(ctx, args[1].toLowerCase())
     } else {
       await replyWithPhoto(ctx, 'nkm')
     }
   } catch (err) {
+    await ctx.reply(err)
     console.log(err)
   }
 })
