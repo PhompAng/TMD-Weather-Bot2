@@ -6,7 +6,7 @@ import download from './download'
 
 import _ from '~/env'
 
-const bot = new Telegraf(process.env.BOT_TOKEN, {username: 'tmd_weather_bot'})
+const bot = new Telegraf(process.env.BOT_TOKEN, {username: process.env.USERNAME})
 const regex = /^\/([^@\s]+)@?(?:(\S+)|)\s?([\s\S]*)$/i
 
 function getRadarPhoto (arg) {
