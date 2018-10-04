@@ -17,7 +17,7 @@ const get = promisify(http.get)
 
 export default async function download (radarUrl) {
   const start = Date.now().toString()
-  let filename = join(appRoot.toString(), '.thumb', start + '_' + radarUrl.filename)
+  let filename = join(appRoot.toString(), 'thumb', start + '_' + radarUrl.filename)
   let response = await get(radarUrl.url + radarUrl.filename)
   await new Promise((resolve, reject) => {
     let file = fs.createWriteStream(filename)
