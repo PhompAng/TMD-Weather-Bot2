@@ -1,4 +1,5 @@
-import 'babel-polyfill'
+import 'core-js/shim'
+import 'regenerator-runtime/runtime'
 import Telegraf from 'telegraf'
 import fs from 'fs'
 import radarUrls from './radar'
