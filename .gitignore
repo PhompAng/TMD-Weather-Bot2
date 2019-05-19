@@ -36,3 +36,5 @@ dist/
 \.env
 
 \.vscode/
+
+service-account-fc1b5e38cefb.json
