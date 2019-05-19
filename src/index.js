@@ -1,9 +1,8 @@
 import 'core-js/shim'
 import 'regenerator-runtime/runtime'
+import { Radar } from './radar'
 import Telegraf from 'telegraf'
-import fs from 'fs'
-import radarUrls from './radar'
-import download2 from './download2'
+import GCloudDownload from './download/GCloudDownload'
 import express from 'express'
 import * as bodyParser from 'body-parser'
 
@@ -12,29 +11,11 @@ import _ from '~/env'
 const bot = new Telegraf(process.env.BOT_TOKEN, {username: process.env.USERNAME})
 const regex = /^\/([^@\s]+)@?(?:(\S+)|)\s?([\s\S]*)$/i
 
-function getRadarPhoto (arg) {
-  switch (arg) {
-  case 'nongchok':
-  case 'njk':
-    return radarUrls.nongchok
-  case 'nongkhame':
-  case 'nkm':
-    return radarUrls.nongkhame
-  case 'large':
-    return radarUrls.large
-  default:
-    return null
-  }
-}
-
-(async () => {
+async function main() {
   async function replyWithPhoto (ctx, arg) {
-    let radarUrl = getRadarPhoto(arg)
-    if (radarUrl == null) {
-      await ctx.reply('Unknown radar')
-    } else {
-      await ctx.replyWithPhoto(await download2(radarUrl))
-    }
+    let radar = new Radar(arg)
+    const downloader = new GCloudDownload(radar)
+    await ctx.replyWithPhoto(await downloader.download())
   }
 
   bot.use((ctx, next) => {
@@ -119,18 +100,11 @@ function getRadarPhoto (arg) {
     })
   })
   app.get('/cron', async (req, res) => {
-    let radarUrl = getRadarPhoto('nkm')
     try {
-      if (radarUrl != null) {
-        await download2(radarUrl)
-        res.json(null)
-      } else {
-        res.status(400).json(
-          {
-            'error': 'Invalid parameter'
-          }
-        )
-      }
+      let radar = new Radar(arg)
+      const downloader = new GCloudDownload(radar)
+      await downloader.download()
+      res.json(null)
     } catch (err) {
       res.status(500).json(
         {
@@ -143,4 +117,6 @@ function getRadarPhoto (arg) {
   app.listen(PORT, function () {
     console.log('Example app listening on port ' + PORT)
   })
-})()
+}
+
+main()

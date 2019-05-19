@@ -1,4 +1,4 @@
-import getFloorTimestamp from 'date-utils'
+import getFloorTimestamp from 'utils/date-utils'
 
 describe('floor by 10', () => {
   test('floor 1550589511000 should be 1550589000000', () => {
