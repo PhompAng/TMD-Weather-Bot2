@@ -7,13 +7,17 @@ export class Radar {
       case 'nongchok':
       case 'njk':
         this.data = radarUrls.nongchok
+        break
       case 'nongkhame':
       case 'nkm':
         this.data = radarUrls.nongkhame
+        break
       case 'large':
         this.data = radarUrls.large
+        break
       default:
         this.data = radarUrls.nongkhame
+        break
       }
   }
 
@@ -27,3 +31,4 @@ export class Radar {
   }
 }
 
+export const radarList = Object.keys(radarUrls)

@@ -1,12 +1,15 @@
 import 'core-js/shim'
 import 'regenerator-runtime/runtime'
-import { Radar } from './radar'
+import { Radar, radarList } from './radar'
+const Sentry = require('@sentry/node')
 import Telegraf from 'telegraf'
 import GCloudDownload from './download/GCloudDownload'
 import express from 'express'
 import * as bodyParser from 'body-parser'
 
 import _ from '~/env'
+
+Sentry.init({ dsn: 'https://fe2fee6d61374ccabb70efd63982a214@sentry.io/1491151' });
 
 const bot = new Telegraf(process.env.BOT_TOKEN, {username: process.env.USERNAME})
 const regex = /^\/([^@\s]+)@?(?:(\S+)|)\s?([\s\S]*)$/i
@@ -87,11 +90,13 @@ async function main() {
     }
   })
   bot.command('ping', ctx => ctx.reply('pong!'))
-  bot.command('list', ctx => ctx.reply(Object.keys(radarUrls)))
+  bot.command('list', ctx => ctx.reply(radarList))
   bot.startPolling()
 
   const PORT = process.env.PORT || 8080
   const app = express()
+  // The request handler must be the first middleware on the app
+  app.use(Sentry.Handlers.requestHandler())
   app.use(bodyParser.json())
 
   app.get('/', (req, res) => {
@@ -101,7 +106,7 @@ async function main() {
   })
   app.get('/cron', async (req, res) => {
     try {
-      let radar = new Radar(arg)
+      let radar = new Radar("nkm")
       const downloader = new GCloudDownload(radar)
       await downloader.download()
       res.json(null)
@@ -113,7 +118,19 @@ async function main() {
       )
     }
   })
+  app.get('/debug-sentry', function mainHandler(req, res) {
+    throw new Error('My first Sentry error!')
+  })
+  // The error handler must be before any other error middleware
+  app.use(Sentry.Handlers.errorHandler())
 
+  // Optional fallthrough error handler
+  app.use(function onError(err, req, res, next) {
+    // The error id is attached to `res.sentry` to be returned
+    // and optionally displayed to the user for support.
+    res.statusCode = 500;
+    res.end(res.sentry + "\n")
+  })
   app.listen(PORT, function () {
     console.log('Example app listening on port ' + PORT)
   })
