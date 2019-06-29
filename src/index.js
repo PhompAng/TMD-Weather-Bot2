@@ -50,8 +50,9 @@ async function main() {
       await ctx.reply('Processing: large')
       await replyWithPhoto(ctx, 'large')
     } catch (err) {
-      await ctx.reply(err)
       console.log(err)
+      Sentry.captureException(err)
+      await ctx.reply(err)
     }
   })
   bot.command(['njk', 'nkm'], async (ctx) => {
@@ -67,8 +68,9 @@ async function main() {
         await replyWithPhoto(ctx, 'nkm')
       }
     } catch (err) {
-      await ctx.reply(err)
       console.log(err)
+      Sentry.captureException(err)
+      await ctx.reply(err)
     }
   })
   bot.command('weather', async (ctx) => {
@@ -85,8 +87,9 @@ async function main() {
         await replyWithPhoto(ctx, 'nkm')
       }
     } catch (err) {
-      await ctx.reply(err)
       console.log(err)
+      Sentry.captureException(err)
+      await ctx.reply(err)
     }
   })
   bot.command('ping', ctx => ctx.reply('pong!'))
@@ -111,6 +114,8 @@ async function main() {
       await downloader.download()
       res.json(null)
     } catch (err) {
+      console.log(err)
+      Sentry.captureException(err)
       res.status(500).json(
         {
           'error': err
