@@ -1,27 +1,27 @@
-import 'core-js/shim'
 import 'regenerator-runtime/runtime'
 import { Radar, radarList } from './radar'
-const Sentry = require('@sentry/node')
-import Telegraf from 'telegraf'
+import { Telegraf } from 'telegraf'
 import GCloudDownload from './download/GCloudDownload'
 import express from 'express'
 import * as bodyParser from 'body-parser'
+import * as Sentry from '@sentry/node'
+import * as dotenv from 'dotenv'
 
-import _ from '~/env'
+dotenv.config()
 
-Sentry.init({ dsn: 'https://fe2fee6d61374ccabb70efd63982a214@sentry.io/1491151' });
+Sentry.init({ dsn: 'https://fe2fee6d61374ccabb70efd63982a214@sentry.io/1491151' })
 
-const bot = new Telegraf(process.env.BOT_TOKEN, {username: process.env.USERNAME})
+const bot = new Telegraf(process.env.BOT_TOKEN, { username: process.env.USERNAME })
 const regex = /^\/([^@\s]+)@?(?:(\S+)|)\s?([\s\S]*)$/i
 
-async function main() {
+async function main () {
   async function replyWithPhoto (ctx, arg) {
-    let radar = new Radar(arg)
+    const radar = new Radar(arg)
     const downloader = new GCloudDownload(radar)
     await ctx.replyWithPhoto(await downloader.download())
   }
 
-  bot.use((ctx, next) => {
+  bot.use(async (ctx, next) => {
     const start = new Date()
     if (ctx.update.message != null) {
       console.log('Recive message: %s [%s]', ctx.update.message.text, start)
@@ -38,30 +38,19 @@ async function main() {
       }
       ctx.state.command = command
     }
-    return next(ctx).then(() => {
-      const ms = new Date() - start
-      console.log('Response time %sms', ms)
-    })
+    await next()
+    const ms = new Date() - start
+    console.log('Response time %sms', ms)
   })
 
   bot.start((ctx) => ctx.reply('Hello! type /weather to start'))
-  bot.command('large', async (ctx) => {
-    try {
-      await ctx.reply('Processing: large')
-      await replyWithPhoto(ctx, 'large')
-    } catch (err) {
-      console.log(err)
-      Sentry.captureException(err)
-      await ctx.reply(err)
-    }
-  })
   bot.command(['njk', 'nkm'], async (ctx) => {
     try {
       if (ctx.state.command.command == null) {
         return
       }
       await ctx.reply('Processing: ' + ctx.state.command.command)
-      let command = ctx.state.command.command
+      const command = ctx.state.command.command
       if (command != null) {
         await replyWithPhoto(ctx, command.toLowerCase())
       } else {
@@ -70,17 +59,17 @@ async function main() {
     } catch (err) {
       console.log(err)
       Sentry.captureException(err)
-      await ctx.reply(err)
+      await ctx.reply(err.message)
     }
   })
-  bot.command('weather', async (ctx) => {
+  bot.command('radar', async (ctx) => {
     try {
       if (ctx.state.command.text == null) {
         return
       }
       console.log(ctx.state)
       await ctx.reply('Processing: ' + ctx.state.command.text)
-      let args = ctx.state.command.text.split(' ')
+      const args = ctx.state.command.text.split(' ')
       if (args[1] != null) {
         await replyWithPhoto(ctx, args[1].toLowerCase())
       } else {
@@ -89,55 +78,44 @@ async function main() {
     } catch (err) {
       console.log(err)
       Sentry.captureException(err)
-      await ctx.reply(err)
+      await ctx.reply(err.message)
     }
   })
   bot.command('ping', ctx => ctx.reply('pong!'))
   bot.command('list', ctx => ctx.reply(radarList))
-  bot.startPolling()
 
   const PORT = process.env.PORT || 8080
   const app = express()
   // The request handler must be the first middleware on the app
   app.use(Sentry.Handlers.requestHandler())
   app.use(bodyParser.json())
+  if (process.env.env === 'local') {
+    bot.launch()
+  } else {
+    app.use(await bot.createWebhook({ domain: process.env.WEBHOOK_DOMAIN }))
+  }
 
-  app.get('/', (req, res) => {
+  app.get('/', (_req, res) => {
     res.json({
-        'username': process.env.USERNAME
+      username: process.env.USERNAME
     })
   })
-  app.get('/cron', async (req, res) => {
-    try {
-      let radar = new Radar("nkm")
-      const downloader = new GCloudDownload(radar)
-      await downloader.download()
-      res.json(null)
-    } catch (err) {
-      console.log(err)
-      Sentry.captureException(err)
-      res.status(500).json(
-        {
-          'error': err
-        }
-      )
-    }
-  })
-  app.get('/debug-sentry', function mainHandler(req, res) {
+  app.get('/debug-sentry', function mainHandler (_req, _res) {
     throw new Error('My first Sentry error!')
   })
   // The error handler must be before any other error middleware
   app.use(Sentry.Handlers.errorHandler())
 
   // Optional fallthrough error handler
-  app.use(function onError(err, req, res, next) {
+  // eslint-disable-next-line n/handle-callback-err
+  app.use(function onError (_err, _req, res, _next) {
     // The error id is attached to `res.sentry` to be returned
     // and optionally displayed to the user for support.
-    res.statusCode = 500;
-    res.end(res.sentry + "\n")
+    res.statusCode = 500
+    res.end(res.sentry + '\n')
   })
   app.listen(PORT, function () {
-    console.log('Example app listening on port ' + PORT)
+    console.log('TMD app listening on port ' + PORT)
   })
 }
 

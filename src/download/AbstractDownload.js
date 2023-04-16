@@ -1,51 +1,57 @@
-import { get } from '~/utils/get'
+import https from 'https'
 
 export default class AbstractDownload {
   constructor (radar) {
     this.radar = radar
   }
 
-  async download() {
+  async download () {
     const uri = this.createUri()
     const fileExists = await this.isExists(uri)
     console.log(uri + ': ' + fileExists)
     if (!fileExists) {
-        const file = this.createFile(uri)
-        let response = await get(this.radar.getDownloadUrl())
-        console.log('Loading ' + uri)
+      const file = this.createFile(uri)
+      const downloadUrl = this.radar.getDownloadUrl()
+      console.log('Loading ' + downloadUrl + ' to ' + uri)
+      try {
         await new Promise((resolve, reject) => {
-          response.pipe(file)
-          file.on('finish', () => {
-            this.onDownloadFinish(file, uri)
-            resolve()
-          })
-          file.on('error', (err) => {
-            console.log(err)
-            this.onDownloadError(file, uri)
-            reject(err)
+          https.get(downloadUrl, function (response) {
+            response.pipe(file)
+
+            file.on('finish', () => {
+              resolve()
+            })
+            file.on('error', (err) => {
+              reject(err)
+            })
           })
         })
+        this.onDownloadFinish(file, uri)
+      } catch (err) {
+        console.log(err)
+        this.onDownloadError(file, uri)
+      }
     }
     return uri
   }
 
-  createUri() {
+  createUri () {
     throw new Error('You have to implement the method')
   }
 
-  async isExists(uri) {
+  async isExists (_uri) {
     throw new Error('You have to implement the method')
   }
 
-  createFile(uri) {
+  createFile (_uri) {
     throw new Error('You have to implement the method')
   }
 
-  onDownloadFinish(file, uri) {
+  onDownloadFinish (_file, _uri) {
 
   }
 
-  onDownloadError(file, uri) {
+  onDownloadError (_file, _uri) {
 
   }
 }

@@ -1,0 +1,23 @@
+{
+	"presets": [
+	  [
+		"@babel/preset-env",
+		{
+		  "targets": {
+			"node": "18.12"
+		  },
+		  "useBuiltIns": "usage",
+		  "corejs": "3.6.5"
+		}
+	  ]
+	],
+	"plugins": [
+		"@babel/plugin-transform-runtime",
+		[
+		  "babel-plugin-root-import",
+		  {
+			"rootPathSuffix": "src"
+		  }
+		]
+	]
+  }

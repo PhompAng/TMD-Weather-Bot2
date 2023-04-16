@@ -1,39 +1,36 @@
 import AbstractDownload from './AbstractDownload'
-import { format } from 'util'
 import { Storage } from '@google-cloud/storage'
-import * as constant from '~/constant'
+import { Input } from 'telegraf'
 
 const storage = new Storage()
 
 export default class GCloudDownload extends AbstractDownload {
-  constructor (radar) {
-    super(radar)
+  async download () {
+    const file = await super.download()
+    return Input.fromReadableStream(file.createReadStream())
   }
 
-  createUri() {
-    const bucket = storage.bucket(process.env.GCLOUD_STORAGE_BUCKET || constant.BUCKET_NAME)
-    let fileName = this.radar.getDownloadName()
-    this.blob = bucket.file(fileName)
-    return format(
-      `${constant.STORAGE_PUBLIC_URL}/${bucket.name}/${this.blob.name}`
-    )
+  createUri () {
+    const bucket = storage.bucket(process.env.GCLOUD_STORAGE_BUCKET)
+    const fileName = this.radar.getDownloadName()
+    return bucket.file(fileName)
   }
 
-  async isExists(uri) {
-    let exists = await this.blob.exists()
+  async isExists (uri) {
+    const exists = await uri.exists()
     return exists[0]
   }
 
-  createFile(uri) {
-    return this.blob.createWriteStream({
+  createFile (uri) {
+    return uri.createWriteStream({
       resumable: false
     })
   }
 
-  onDownloadFinish(file, uri) {
+  onDownloadFinish (_file, _uri) {
     console.log('Download complete')
   }
 
-  onDownloadError(file, uri) {
+  onDownloadError (_file, _uri) {
   }
 }

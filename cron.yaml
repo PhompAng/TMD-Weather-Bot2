@@ -1,4 +1,1 @@
 cron:
-- description: "hourly load radar"
-  url: /cron
-  schedule: every 1 hours
