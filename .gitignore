@@ -38,3 +38,4 @@ dist/
 \.vscode/
 
 tmd-weather-bot-c2e123ef30a9.json
+env_variables.yaml

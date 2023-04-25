@@ -1,6 +1,0 @@
-env_variables:
-  ENV: "prod"
-  BOT_TOKEN: "428608944:AAE_jp_mKe3Gj2ckJH11m-KB-VP3UMGLGBQ"
-  USERNAME: "tmd_weather_bot"
-  GCLOUD_STORAGE_BUCKET: "tmd_weather"
-  WEBHOOK_DOMAIN: "tmd-weather-bot.an.r.appspot.com"

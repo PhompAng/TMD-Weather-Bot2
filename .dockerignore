@@ -10,3 +10,8 @@ npm-debug.log
 Dockerfile
 deployment.yaml
 service.yaml
+.env
+tmd-weather-bot-c2e123ef30a9.json
+env_variables.yaml
+.DS_Store
+.thumb/

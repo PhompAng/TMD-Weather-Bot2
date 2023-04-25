@@ -6,6 +6,7 @@ import express from 'express'
 import * as bodyParser from 'body-parser'
 import * as Sentry from '@sentry/node'
 import * as dotenv from 'dotenv'
+import placeForecast from '~/forecast'
 
 dotenv.config()
 
@@ -81,6 +82,14 @@ async function main () {
       await ctx.reply(err.message)
     }
   })
+  bot.command('forecast', async (ctx) => {
+    try {
+      const result = await placeForecast()
+      await ctx.reply(result)
+    } catch (error) {
+      await ctx.reply(error.message)
+    }
+  })
   bot.command('ping', ctx => ctx.reply('pong!'))
   bot.command('list', ctx => ctx.reply(radarList))
 
@@ -89,7 +98,7 @@ async function main () {
   // The request handler must be the first middleware on the app
   app.use(Sentry.Handlers.requestHandler())
   app.use(bodyParser.json())
-  if (process.env.env === 'local') {
+  if (process.env.ENV === 'local') {
     bot.launch()
   } else {
     app.use(await bot.createWebhook({ domain: process.env.WEBHOOK_DOMAIN }))
