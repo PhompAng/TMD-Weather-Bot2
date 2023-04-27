@@ -22,7 +22,7 @@ function buildMessage (forecastResult) {
   const placeMessage = 'พยากรณ์อากาศแขวง' + forecastResult.location.name + ' เขต' + forecastResult.location.amphoe + ' จังหวัด' + forecastResult.location.province + '\n'
   result += placeMessage
   for (const forecast of forecastResult.forecasts) {
-    result += 'เวลา ' + new Date(forecast.time).toLocaleTimeString() + '\n'
+    result += 'เวลา ' + new Date(forecast.time).toLocaleTimeString('th-TH', { timeZone: 'Asia/Bangkok' }) + '\n'
     result += CONDITION_MAP[forecast.data.cond] + ' อุณหภูมิ: ' + forecast.data.tc + '°C, ความชื้นสัมพัทธ์: ' + forecast.data.rh + '%\n'
     result += 'ปริมาณฝน: ' + forecast.data.rain + 'mm.\n'
   }
